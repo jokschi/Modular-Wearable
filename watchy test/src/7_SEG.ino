@@ -1,9 +1,12 @@
-#include "Watchy_Pokemon.h"
+#include "Watchy_7_SEG.h"
 
-WatchyPokemon watchy;
+Watchy7SEG watchy;
 
 void setup(){
   watchy.init();
 }
 
 void loop(){}
+
+
+
