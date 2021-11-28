@@ -32,7 +32,7 @@
 #define TEMP_UNIT "metric" //use "imperial" for Fahrenheit"
 #define WEATHER_UPDATE_INTERVAL 30 //minutes
 //wifi
-#define WIFI_AP_TIMEOUT 60
+#define WIFI_AP_TIMEOUT 120
 #define WIFI_AP_SSID "AP Watchy"
 
 //menu
