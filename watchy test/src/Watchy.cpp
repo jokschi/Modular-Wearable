@@ -182,10 +182,10 @@ void Watchy::handleButtonPress(){
   /***************** fast menu *****************/
   bool timeout = false;
   long lastTimeout = millis();
-  pinMode(MENU_BTN_PIN, INPUT);
-  pinMode(BACK_BTN_PIN, INPUT);
-  pinMode(UP_BTN_PIN, INPUT);
-  pinMode(DOWN_BTN_PIN, INPUT);
+  pinMode(MENU_BTN_PIN, INPUT_PULLDOWN);
+  pinMode(BACK_BTN_PIN, INPUT_PULLDOWN);
+  pinMode(UP_BTN_PIN, INPUT_PULLDOWN);
+  pinMode(DOWN_BTN_PIN, INPUT_PULLDOWN);
   while(!timeout){
       if(millis() - lastTimeout > 5000){
           timeout = true;
