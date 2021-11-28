@@ -775,7 +775,7 @@ void Watchy::setupWifi(){
   wifiManager.resetSettings();
   wifiManager.setTimeout(WIFI_AP_TIMEOUT);
   wifiManager.setAPCallback(_configModeCallback);
-  if(!wifiManager.autoConnect(WIFI_AP_SSID, WIFI_AP_PASSWORD)) {//WiFi setup failed
+  if(!wifiManager.autoConnect(WIFI_AP_SSID)) {//WiFi setup failed
     display.init(0, false); //_initial_refresh to false to prevent full update on init
     display.setFullWindow();
     display.fillScreen(GxEPD_BLACK);

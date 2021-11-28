@@ -33,8 +33,8 @@
 #define WEATHER_UPDATE_INTERVAL 30 //minutes
 //wifi
 #define WIFI_AP_TIMEOUT 60
-#define WIFI_AP_SSID "WLAN-Expert2 2,4GHz"
-#define WIFI_AP_PASSWORD "CuuJWFN2Is"
+#define WIFI_AP_SSID "AP Watchy"
+
 //menu
 #define WATCHFACE_STATE -1
 #define MAIN_MENU_STATE 0
