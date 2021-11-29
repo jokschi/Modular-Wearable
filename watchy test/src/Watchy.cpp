@@ -359,6 +359,36 @@ void Watchy::vibMotor(uint8_t intervalMs, uint8_t length){
     }
 }
 
+/*
+void Watchy::setTimeWifi(){
+    
+    const char* ntpServer = "europe.pool.ntp.org";
+    const long  gmtOffset_sec = 3600;
+    const int   daylightOffset_sec = 3600;
+
+    struct tm timeinfo;
+
+    connectWiFi();
+    
+    //init and get the time
+    configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+    getLocalTime(&timeinfo);
+
+    currentTime.Hour = timeinfo.tm_hour;
+    currentTime.Minute = timeinfo.tm_min;
+    
+    currentTime.Day = timeinfo.tm_mday;
+    currentTime.Month = timeinfo.tm_mon;
+    currentTime.Year = timeinfo.tm_year;
+  
+
+    //disconnect WiFi as it's no longer needed
+    WiFi.disconnect(true);
+    WiFi.mode(WIFI_OFF);
+
+}
+*/
+
 void Watchy::setTime(){
 
     guiState = APP_STATE;

@@ -12,7 +12,8 @@
 #include "DSEG7_Classic_Bold_53.h"
 #include "BLE.h"
 #include "bma.h"
-#include "config.h"    
+#include "config.h"
+#include "time.h"    
 
 typedef struct weatherData{
     int8_t temperature;
@@ -39,6 +40,7 @@ class Watchy {
         void showAccelerometer();
         void showUpdateFW();
         void setTime();
+        void setTimeWifi();
         void setupWifi();
         bool connectWiFi();
         weatherData getWeatherData();
