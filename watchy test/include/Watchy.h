@@ -5,7 +5,7 @@
 #include <WiFiManager.h>
 #include <HTTPClient.h>
 #include <Arduino_JSON.h>
-#include <DS3232RTC.h>
+//#include <DS3232RTC.h>
 #include <GxEPD2_BW.h>
 #include <Wire.h>
 #include <Fonts/FreeMonoBold9pt7b.h>
@@ -13,7 +13,8 @@
 #include "BLE.h"
 #include "bma.h"
 #include "config.h"
-#include "time.h"    
+#include "time.h"
+#include "ESP32Time.h"    
 
 typedef struct weatherData{
     int8_t temperature;
@@ -22,9 +23,9 @@ typedef struct weatherData{
 
 class Watchy {
     public:
-        static DS3232RTC RTC;
+        //static DS3232RTC RTC;
         static GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> display;
-        tmElements_t currentTime;
+        //tmElements_t currentTime;
     public:
         Watchy();
         void init(String datetime = "");
