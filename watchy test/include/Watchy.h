@@ -38,7 +38,7 @@ class Watchy {
         void showFastMenu(byte menuIndex);
         void showBattery();
         void showBuzz();
-        void showAccelerometer();
+        void showSensorMenu(byte menuIndex, bool partialRefresh);
         void showUpdateFW();
         void setTime();
         void setTimeWifi();

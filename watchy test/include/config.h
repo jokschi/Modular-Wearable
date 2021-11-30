@@ -42,6 +42,7 @@
 #define FW_UPDATE_STATE 2
 #define MENU_HEIGHT 30
 #define MENU_LENGTH 6
+#define SENSOR_MENU_LENGTH 3
 //set time
 #define SET_HOUR 0
 #define SET_MINUTE 1

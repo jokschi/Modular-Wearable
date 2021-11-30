@@ -133,7 +133,7 @@ void Watchy::handleButtonPress(){
           showBuzz();
           break;          
         case 2:
-          showAccelerometer();
+          showSensorMenu(menuIndex, false);
           break;
         case 3:
           setTime();
@@ -207,7 +207,7 @@ void Watchy::handleButtonPress(){
                     showBuzz();
                     break;          
                     case 2:
-                    showAccelerometer();
+                    showSensorMenu(menuIndex, false);
                     break;
                     case 3:
                     setTime();
@@ -270,7 +270,7 @@ void Watchy::showMenu(byte menuIndex, bool partialRefresh){
     uint16_t w, h;
     int16_t yPos;
 
-    const char *menuItems[] = {"Check Battery", "Vibrate Motor", "Show Accelerometer", "Set Time", "Setup WiFi", "Update Firmware"};
+    const char *menuItems[] = {"Check Battery", "Vibrate Motor", "Sensor Data", "Set Time", "Setup WiFi", "Update Firmware"};
     for(int i=0; i<MENU_LENGTH; i++){
     yPos = 30+(MENU_HEIGHT*i);
     display.setCursor(0, yPos);
@@ -300,7 +300,7 @@ void Watchy::showFastMenu(byte menuIndex){
     uint16_t w, h;
     int16_t yPos;
 
-    const char *menuItems[] = {"Check Battery", "Vibrate Motor", "Show Accelerometer", "Set Time", "Setup WiFi", "Update Firmware"};
+    const char *menuItems[] = {"Check Battery", "Vibrate Motor", "Sensor Data", "Set Time", "Setup WiFi", "Update Firmware"};
     for(int i=0; i<MENU_LENGTH; i++){
     yPos = 30+(MENU_HEIGHT*i);
     display.setCursor(0, yPos);
@@ -318,6 +318,37 @@ void Watchy::showFastMenu(byte menuIndex){
     display.display(true);
 
     guiState = MAIN_MENU_STATE;    
+}
+
+void Watchy::showSensorMenu(byte menuIndex, bool partialRefresh){
+    display.init(0, false); //_initial_refresh to false to prevent full update on init
+    display.setFullWindow();
+    display.fillScreen(GxEPD_BLACK);
+    display.setFont(&FreeMonoBold9pt7b);
+
+    int16_t  x1, y1;
+    uint16_t w, h;
+    int16_t yPos;
+
+    const char *menuItems[] = {"Heartrate", "Accelerometer", "Temperature"};
+    for(int i=0; i<SENSOR_MENU_LENGTH; i++){
+    yPos = 30+(MENU_HEIGHT*i);
+    display.setCursor(0, yPos);
+    if(i == menuIndex){
+        display.getTextBounds(menuItems[i], 0, yPos, &x1, &y1, &w, &h);
+        display.fillRect(x1-1, y1-10, 200, h+15, GxEPD_WHITE);
+        display.setTextColor(GxEPD_BLACK);
+        display.println(menuItems[i]);      
+    }else{
+        display.setTextColor(GxEPD_WHITE);
+        display.println(menuItems[i]);
+    }   
+    }
+
+    display.display(partialRefresh);
+    //display.hibernate();
+
+    //guiState = MAIN_MENU_STATE;    
 }
 
 void Watchy::showBattery(){
@@ -541,77 +572,6 @@ void Watchy::setTime(){
 
     showMenu(menuIndex, false);
 
-}
-
-void Watchy::showAccelerometer(){
-    display.init(0, true); //_initial_refresh to false to prevent full update on init
-    display.setFullWindow();
-    display.fillScreen(GxEPD_BLACK);
-    display.setFont(&FreeMonoBold9pt7b);
-    display.setTextColor(GxEPD_WHITE);
-
-    Accel acc;
-
-    long previousMillis = 0;
-    long interval = 200;  
-
-    guiState = APP_STATE;
-
-    pinMode(BACK_BTN_PIN, INPUT);
-
-    while(1){
-
-    unsigned long currentMillis = millis();
-
-    if(digitalRead(BACK_BTN_PIN) == 1){
-        break;
-    }
-
-    if(currentMillis - previousMillis > interval){
-        previousMillis = currentMillis;
-        // Get acceleration data
-        bool res = sensor.getAccel(acc);
-        uint8_t direction = sensor.getDirection();
-        display.fillScreen(GxEPD_BLACK);      
-        display.setCursor(0, 30);
-        if(res == false) {
-            display.println("getAccel FAIL");
-        }else{
-        display.print("  X:"); display.println(acc.x);
-        display.print("  Y:"); display.println(acc.y);
-        display.print("  Z:"); display.println(acc.z);
-
-        display.setCursor(30, 130);
-        switch(direction){
-            case DIRECTION_DISP_DOWN:
-                display.println("FACE DOWN");
-                break;
-            case DIRECTION_DISP_UP:
-                display.println("FACE UP");
-                break;
-            case DIRECTION_BOTTOM_EDGE:
-                display.println("BOTTOM EDGE");
-                break;
-            case DIRECTION_TOP_EDGE:
-                display.println("TOP EDGE");
-                break;
-            case DIRECTION_RIGHT_EDGE:
-                display.println("RIGHT EDGE");
-                break;
-            case DIRECTION_LEFT_EDGE:
-                display.println("LEFT EDGE");
-                break;
-            default:
-                display.println("ERROR!!!");
-                break;
-        }
-
-        }
-        display.display(true); //full refresh
-    }
-    }
-
-    showMenu(menuIndex, false);
 }
 
 void Watchy::showWatchFace(bool partialRefresh){
