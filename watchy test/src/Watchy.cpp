@@ -5,6 +5,14 @@
 int test;
 
 ESP32Time rtc;
+
+hw_timer_t * timer = NULL;
+volatile byte state = LOW;
+
+void RefreshTimer();
+
+
+Watchy watch;
  
 GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> Watchy::display(GxEPD2_154_D67(CS, DC, RESET, BUSY));
 
@@ -42,80 +50,40 @@ void Watchy::init(String datetime){
 
     switch (wakeup_reason)
     {
-        #ifdef ESP_RTC
         case ESP_SLEEP_WAKEUP_TIMER: //ESP Internal RTC
             if(guiState == WATCHFACE_STATE){
-                RTC.read(currentTime);
-                currentTime.Minute++;
-                tmElements_t tm;
-                tm.Month = currentTime.Month;
-                tm.Day = currentTime.Day;
-                tm.Year = currentTime.Year;
-                tm.Hour = currentTime.Hour;
-                tm.Minute = currentTime.Minute;
-                tm.Second = 0;
-                time_t t = makeTime(tm);
-                RTC.set(t);
-                RTC.read(currentTime);           
+                Serial.print("56\n");          
                 showWatchFace(true); //partial updates on tick
+                Serial.print("58\n");
             }
             break;        
-        #endif
-        case ESP_SLEEP_WAKEUP_EXT0: //RTC Alarm
-            //RTC.alarm(ALARM_2); //resets the alarm flag in the RTC
-            if(guiState == WATCHFACE_STATE){
-                showWatchFace(true); //partial updates on tick
-            }
-            break;
         case ESP_SLEEP_WAKEUP_EXT1: //button Press
             handleButtonPress();
             break;
         default: //reset
-            #ifndef ESP_RTC
-            //_rtcConfig(datetime);
-            #endif
             _bmaConfig();
+            Serial.print("78\n");
             showWatchFace(false); //full update on reset
+            Serial.print("80\n");
             break;
     }
     deepSleep();
 }
 
 void Watchy::deepSleep(){
-  #ifndef ESP_RTC
-  esp_sleep_enable_ext0_wakeup(RTC_PIN, 0); //enable deep sleep wake on RTC interrupt
-  #endif  
-  #ifdef ESP_RTC
-  esp_sleep_enable_timer_wakeup(60000000);
-  #endif 
+  esp_sleep_enable_timer_wakeup(20000000);
   esp_sleep_enable_ext1_wakeup(BTN_PIN_MASK, ESP_EXT1_WAKEUP_ANY_HIGH); //enable deep sleep wake on button press
   esp_deep_sleep_start();
 }
 
-/*
+
 void Watchy::_rtcConfig(String datetime){
-    if(datetime != NULL){
-        const time_t FUDGE(30);//fudge factor to allow for upload time, etc. (seconds, YMMV)
-        tmElements_t tm;
-        tm.Year = getValue(datetime, ':', 0).toInt() - YEAR_OFFSET;//offset from 1970, since year is stored in uint8_t        
-        tm.Month = getValue(datetime, ':', 1).toInt();
-        tm.Day = getValue(datetime, ':', 2).toInt();
-        tm.Hour = getValue(datetime, ':', 3).toInt();
-        tm.Minute = getValue(datetime, ':', 4).toInt();
-        tm.Second = getValue(datetime, ':', 5).toInt();
-
-        time_t t = makeTime(tm) + FUDGE;
-        RTC.set(t);
-
-    }
-    //https://github.com/JChristensen/DS3232RTC
-    RTC.squareWave(SQWAVE_NONE); //disable square wave output
-    //RTC.set(compileTime()); //set RTC time to compile time
-    RTC.setAlarm(ALM2_EVERY_MINUTE, 0, 0, 0, 0); //alarm wakes up Watchy every minute
-    RTC.alarmInterrupt(ALARM_2, true); //enable alarm interrupt
-    RTC.read(currentTime);
+       
 }
-*/
+
+void IRAM_ATTR onTimer(){
+    state = !state;
+}
 
 void Watchy::handleButtonPress(){
   uint64_t wakeupBit = esp_sleep_get_ext1_wakeup_status();
@@ -155,8 +123,9 @@ void Watchy::handleButtonPress(){
   else if (wakeupBit & BACK_BTN_MASK){
     if(guiState == MAIN_MENU_STATE){//exit to watch face if already in menu
       //RTC.alarm(ALARM_2); //resets the alarm flag in the RTC
-
+      Serial.print("160\n");
       showWatchFace(false);
+      Serial.print("162\n");
     }else if(guiState == APP_STATE){
       showMenu(menuIndex, false);//exit to menu if already in app
     }else if(guiState == FW_UPDATE_STATE){
@@ -228,8 +197,9 @@ void Watchy::handleButtonPress(){
             lastTimeout = millis();
             if(guiState == MAIN_MENU_STATE){//exit to watch face if already in menu
             //RTC.alarm(ALARM_2); //resets the alarm flag in the RTC
-
+            Serial.print("234\n");
             showWatchFace(false);
+            Serial.print("236\n");
             break; //leave loop
             }else if(guiState == APP_STATE){
             showMenu(menuIndex, false);//exit to menu if already in app
@@ -286,7 +256,7 @@ void Watchy::showMenu(byte menuIndex, bool partialRefresh){
     }
 
     display.display(partialRefresh);
-    //display.hibernate();
+    display.hibernate();
 
     guiState = MAIN_MENU_STATE;    
 }
@@ -393,35 +363,6 @@ void Watchy::vibMotor(uint8_t intervalMs, uint8_t length){
     }
 }
 
-/*
-void Watchy::setTimeWifi(){
-    
-    const char* ntpServer = "europe.pool.ntp.org";
-    const long  gmtOffset_sec = 3600;
-    const int   daylightOffset_sec = 3600;
-
-    struct tm timeinfo;
-
-    connectWiFi();
-    
-    //init and get the time
-    configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
-    getLocalTime(&timeinfo);
-
-    currentTime.Hour = timeinfo.tm_hour;
-    currentTime.Minute = timeinfo.tm_min;
-    
-    currentTime.Day = timeinfo.tm_mday;
-    currentTime.Month = timeinfo.tm_mon;
-    currentTime.Year = timeinfo.tm_year;
-  
-
-    //disconnect WiFi as it's no longer needed
-    WiFi.disconnect(true);
-    WiFi.mode(WIFI_OFF);
-
-}
-*/
 
 void Watchy::setTime(){
 
@@ -575,6 +516,9 @@ void Watchy::setTime(){
 }
 
 void Watchy::showWatchFace(bool partialRefresh){
+  //RefreshTimer();
+  Serial.print("Start Watchface\n");
+
   display.init(0, false); //_initial_refresh to false to prevent full update on init
   display.setFullWindow();
   display.fillScreen(GxEPD_BLACK);
@@ -582,20 +526,24 @@ void Watchy::showWatchFace(bool partialRefresh){
   display.display(partialRefresh); //partial refresh
   display.hibernate();
   guiState = WATCHFACE_STATE;
+
+  Serial.print("Ende Watchface\n");
 }
 
 void Watchy::drawWatchFace(){
+    int hour = rtc.getHour();
+    int minute = rtc.getMinute();
     display.setFont(&DSEG7_Classic_Bold_53);
     display.setCursor(5, 53+60);
-    if(rtc.getHour() < 10){
+    if(hour < 10){
         display.print("0");
     }
-    display.print(rtc.getHour());
+    display.print(hour);
     display.print(":");
-    if(rtc.getMinute() < 10){
+    if(minute < 10){
         display.print("0");
     }  
-    display.println(rtc.getMinute());    
+    display.println(minute);    
 }
 
 weatherData Watchy::getWeatherData(){
@@ -951,3 +899,9 @@ void Watchy::updateFWBegin(){
 //     time_t t = makeTime(tm);
 //     return t + FUDGE;        //add fudge factor to allow for compile time
 // }
+
+
+
+
+
+
