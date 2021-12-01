@@ -130,26 +130,38 @@ void Watchy::handleButtonPress(){
       showMenu(menuIndex, false);//exit to menu if already in app
     }else if(guiState == FW_UPDATE_STATE){
       showMenu(menuIndex, false);//exit to menu if already in app
-    }
+    }else if(guiState == SD_MENU_STATE){
+      showFastMenu(menuIndex);//exit to menu if already in app
+    }   
   }
   //Up Button
   else if (wakeupBit & UP_BTN_MASK){
-    if(guiState == MAIN_MENU_STATE){//increment menu index
+    if((guiState == MAIN_MENU_STATE) | (guiState == SD_MENU_STATE)){//increment menu index
       menuIndex--;
       if(menuIndex < 0){
         menuIndex = MENU_LENGTH - 1;
       }    
-      showMenu(menuIndex, true);
+      if(guiState == SD_MENU_STATE){
+          showSensorMenu(menuIndex, false);
+      }
+      else{
+          showMenu(menuIndex, true);
+      }
     }
   }
   //Down Button
   else if (wakeupBit & DOWN_BTN_MASK){
-    if(guiState == MAIN_MENU_STATE){//decrement menu index
+    if((guiState == MAIN_MENU_STATE) | (guiState == SD_MENU_STATE)){//decrement menu index
       menuIndex++;
       if(menuIndex > MENU_LENGTH - 1){
         menuIndex = 0;
       }
-      showMenu(menuIndex, true);
+      if(guiState == SD_MENU_STATE){
+          showSensorMenu(menuIndex, false);
+      }
+      else{
+          showMenu(menuIndex, true);
+      }
     }
   }
   
@@ -205,24 +217,38 @@ void Watchy::handleButtonPress(){
             showMenu(menuIndex, false);//exit to menu if already in app
             }else if(guiState == FW_UPDATE_STATE){
             showMenu(menuIndex, false);//exit to menu if already in app
-            }            
+            }    
+            else if(guiState == SD_MENU_STATE){
+            showFastMenu(menuIndex);//exit to menu if already in app
+            }        
           }else if(digitalRead(UP_BTN_PIN) == 1){
             lastTimeout = millis();
-            if(guiState == MAIN_MENU_STATE){//increment menu index
+            if((guiState == MAIN_MENU_STATE) || (guiState == SD_MENU_STATE)){//increment menu index
             menuIndex--;
             if(menuIndex < 0){
                 menuIndex = MENU_LENGTH - 1;
             }    
-            showFastMenu(menuIndex);
-            }            
+            if(guiState == SD_MENU_STATE){
+                showSensorMenu(menuIndex, false);
+            }
+            else{
+                showFastMenu(menuIndex); 
+            }   
+            } 
+
           }else if(digitalRead(DOWN_BTN_PIN) == 1){
             lastTimeout = millis();
-            if(guiState == MAIN_MENU_STATE){//decrement menu index
+            if((guiState == MAIN_MENU_STATE) || (guiState == SD_MENU_STATE)){//decrement menu index
             menuIndex++;
             if(menuIndex > MENU_LENGTH - 1){
                 menuIndex = 0;
             }
-            showFastMenu(menuIndex);
+            if(guiState == SD_MENU_STATE){
+                showSensorMenu(menuIndex, false);
+            }
+            else{
+                showFastMenu(menuIndex); 
+            } 
             }         
           }
       }
@@ -291,7 +317,6 @@ void Watchy::showFastMenu(byte menuIndex){
 }
 
 void Watchy::showSensorMenu(byte menuIndex, bool partialRefresh){
-    display.init(0, false); //_initial_refresh to false to prevent full update on init
     display.setFullWindow();
     display.fillScreen(GxEPD_BLACK);
     display.setFont(&FreeMonoBold9pt7b);
@@ -315,10 +340,9 @@ void Watchy::showSensorMenu(byte menuIndex, bool partialRefresh){
     }   
     }
 
-    display.display(partialRefresh);
-    //display.hibernate();
+    display.display(true);
 
-    //guiState = MAIN_MENU_STATE;    
+    guiState = SD_MENU_STATE;    
 }
 
 void Watchy::showBattery(){

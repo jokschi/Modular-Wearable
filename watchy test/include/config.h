@@ -40,6 +40,7 @@
 #define MAIN_MENU_STATE 0
 #define APP_STATE 1
 #define FW_UPDATE_STATE 2
+#define SD_MENU_STATE 3
 #define MENU_HEIGHT 30
 #define MENU_LENGTH 6
 #define SENSOR_MENU_LENGTH 3
