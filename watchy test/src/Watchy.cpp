@@ -2,14 +2,13 @@
 #include <Arduino.h>
 #include "ESP32Time.h"
 
+
 int test;
 
 ESP32Time rtc;
 
 hw_timer_t * timer = NULL;
 volatile byte state = LOW;
-
-void RefreshTimer();
 
 
 Watchy watch;
@@ -52,9 +51,7 @@ void Watchy::init(String datetime){
     {
         case ESP_SLEEP_WAKEUP_TIMER: //ESP Internal RTC
             if(guiState == WATCHFACE_STATE){
-                Serial.print("56\n");          
                 showWatchFace(true); //partial updates on tick
-                Serial.print("58\n");
             }
             break;        
         case ESP_SLEEP_WAKEUP_EXT1: //button Press
@@ -62,16 +59,14 @@ void Watchy::init(String datetime){
             break;
         default: //reset
             _bmaConfig();
-            Serial.print("78\n");
             showWatchFace(false); //full update on reset
-            Serial.print("80\n");
             break;
     }
     deepSleep();
 }
 
 void Watchy::deepSleep(){
-  esp_sleep_enable_timer_wakeup(20000000);
+  esp_sleep_enable_timer_wakeup(15000000);
   esp_sleep_enable_ext1_wakeup(BTN_PIN_MASK, ESP_EXT1_WAKEUP_ANY_HIGH); //enable deep sleep wake on button press
   esp_deep_sleep_start();
 }
@@ -123,9 +118,7 @@ void Watchy::handleButtonPress(){
   else if (wakeupBit & BACK_BTN_MASK){
     if(guiState == MAIN_MENU_STATE){//exit to watch face if already in menu
       //RTC.alarm(ALARM_2); //resets the alarm flag in the RTC
-      Serial.print("160\n");
       showWatchFace(false);
-      Serial.print("162\n");
     }else if(guiState == APP_STATE){
       showMenu(menuIndex, false);//exit to menu if already in app
     }else if(guiState == FW_UPDATE_STATE){
@@ -197,9 +190,7 @@ void Watchy::handleButtonPress(){
             lastTimeout = millis();
             if(guiState == MAIN_MENU_STATE){//exit to watch face if already in menu
             //RTC.alarm(ALARM_2); //resets the alarm flag in the RTC
-            Serial.print("234\n");
             showWatchFace(false);
-            Serial.print("236\n");
             break; //leave loop
             }else if(guiState == APP_STATE){
             showMenu(menuIndex, false);//exit to menu if already in app
@@ -516,8 +507,6 @@ void Watchy::setTime(){
 }
 
 void Watchy::showWatchFace(bool partialRefresh){
-  //RefreshTimer();
-  Serial.print("Start Watchface\n");
 
   display.init(0, false); //_initial_refresh to false to prevent full update on init
   display.setFullWindow();
@@ -526,13 +515,13 @@ void Watchy::showWatchFace(bool partialRefresh){
   display.display(partialRefresh); //partial refresh
   display.hibernate();
   guiState = WATCHFACE_STATE;
-
-  Serial.print("Ende Watchface\n");
 }
 
 void Watchy::drawWatchFace(){
-    int hour = rtc.getHour();
+    
+    int hour = rtc.getHour(true);
     int minute = rtc.getMinute();
+    
     display.setFont(&DSEG7_Classic_Bold_53);
     display.setCursor(5, 53+60);
     if(hour < 10){
@@ -583,7 +572,7 @@ weatherData Watchy::getWeatherData(){
 
 float Watchy::getBatteryVoltage(){
     // Battery voltage goes through a 1/2 divider.
-    return analogReadMilliVolts(ADC_PIN) / 1000.0f * 2.0f;
+    return analogReadMilliVolts(ADC_PIN) / 1000.0f;
 }
 
 uint16_t Watchy::_readRegister(uint8_t address, uint8_t reg, uint8_t *data, uint16_t len)
@@ -902,6 +891,41 @@ void Watchy::updateFWBegin(){
 
 
 
+void scanAdress(){
 
+    Wire.begin();
+  
+    Serial.println("\nI2C Scanner");
+    
+    byte error, address;
+    int nDevices;
+    Serial.println("Scanning...");
+    nDevices = 0;
+    for(address = 1; address < 127; address++ ) {
+        Wire.beginTransmission(address);
+        error = Wire.endTransmission();
+        if (error == 0) {
+            Serial.print("I2C device found at address 0x");
+            if (address<16) {
+                Serial.print("0");
+            }
+            Serial.println(address,HEX);
+            nDevices++;
+        }
+        else if (error==4) {
+            Serial.print("Unknow error at address 0x");
+            if (address<16) {
+                Serial.print("0");
+            }
+            Serial.println(address,HEX);
+        }    
+    }
+    if (nDevices == 0) {
+        Serial.println("No I2C devices found\n");
+    }
+    else {
+        Serial.println("done\n");
+    }
+}
 
 
