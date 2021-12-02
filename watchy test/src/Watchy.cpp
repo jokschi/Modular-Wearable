@@ -2,14 +2,15 @@
 #include <Arduino.h>
 #include "ESP32Time.h"
 
-
-int test;
-
 ESP32Time rtc;
 
 hw_timer_t * timer = NULL;
 volatile byte state = LOW;
 
+byte error, address;
+int nDevices;
+
+void scanAdress();
 
 Watchy watch;
  
@@ -22,6 +23,8 @@ RTC_DATA_ATTR bool WIFI_CONFIGURED;
 RTC_DATA_ATTR bool BLE_CONFIGURED;
 RTC_DATA_ATTR weatherData currentWeather;
 RTC_DATA_ATTR int weatherIntervalCounter = WEATHER_UPDATE_INTERVAL;
+
+
 
 String getValue(String data, char separator, int index)
 {
@@ -43,6 +46,7 @@ String getValue(String data, char separator, int index)
 Watchy::Watchy(){} //constructor
 
 void Watchy::init(String datetime){
+    Serial.begin(9600);
     esp_sleep_wakeup_cause_t wakeup_reason;
     wakeup_reason = esp_sleep_get_wakeup_cause(); //get wake up reason
     Wire.begin(SDA, SCL); //init i2c
@@ -361,10 +365,12 @@ void Watchy::showBuzz(){
     display.setFont(&FreeMonoBold9pt7b);
     display.setTextColor(GxEPD_WHITE);
     display.setCursor(70, 80);
-    display.println("Buzz!");
+    display.println("Scan Adresses");
+    Serial.println("Scan start");
+    scanAdress();
+    Serial.println("Scan ende");
     display.display(false); //full refresh
     display.hibernate();
-    vibMotor();
     showMenu(menuIndex, false);    
 }
 
@@ -916,14 +922,13 @@ void Watchy::updateFWBegin(){
 
 
 void scanAdress(){
-
+    
+    Serial.println("Scan...");
     Wire.begin();
   
     Serial.println("\nI2C Scanner");
-    
-    byte error, address;
-    int nDevices;
     Serial.println("Scanning...");
+
     nDevices = 0;
     for(address = 1; address < 127; address++ ) {
         Wire.beginTransmission(address);
