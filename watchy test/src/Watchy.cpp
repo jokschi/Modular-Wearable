@@ -17,6 +17,7 @@ GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> Watchy::display(GxEPD2_154_D67
 
 RTC_DATA_ATTR int guiState;
 RTC_DATA_ATTR int menuIndex;
+RTC_DATA_ATTR int SensorIndex;
 RTC_DATA_ATTR BMA423 sensor;
 RTC_DATA_ATTR bool WIFI_CONFIGURED;
 RTC_DATA_ATTR bool BLE_CONFIGURED;
@@ -124,24 +125,27 @@ void Watchy::handleButtonPress(){
     }else if(guiState == FW_UPDATE_STATE){
       showMenu(menuIndex, false);//exit to menu if already in app
     }else if(guiState == SD_MENU_STATE){
-      showFastMenu(menuIndex);//exit to menu if already in app
+      showFastMenu(SensorIndex);//exit to menu if already in app
     }   
   }
   //Up Button
   else if (wakeupBit & UP_BTN_MASK){
-    if((guiState == MAIN_MENU_STATE) | (guiState == SD_MENU_STATE)){//increment menu index
+    if(guiState == MAIN_MENU_STATE){                      
       menuIndex--;
       if(menuIndex < 0){
         menuIndex = MENU_LENGTH - 1;
       }    
-      if(guiState == SD_MENU_STATE){
-          showSensorMenu(menuIndex, false);
-      }
-      else{
-          showMenu(menuIndex, true);
+      showMenu(menuIndex, true);
+    }
+    else if(guiState == SD_MENU_STATE){
+      SensorIndex--;
+      if(SensorIndex < 0){
+        SensorIndex = SENSOR_MENU_LENGTH - 1;
+      }      
+      showSensorMenu(menuIndex, false);
       }
     }
-  }
+
   //Down Button
   else if (wakeupBit & DOWN_BTN_MASK){
     if((guiState == MAIN_MENU_STATE) | (guiState == SD_MENU_STATE)){//decrement menu index
