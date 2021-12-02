@@ -2,8 +2,10 @@
 #define CONFIG_H
 
 //pins
-#define SDA 18
-#define SCL 5
+#define SCL 22
+#define SDA 23
+#define DIN 18
+#define SCK 5
 #define ADC_PIN 13
 #define RTC_PIN GPIO_NUM_17
 #define CS 21

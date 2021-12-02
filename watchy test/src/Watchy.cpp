@@ -50,7 +50,7 @@ void Watchy::init(String datetime){
     Serial.begin(9600);
     esp_sleep_wakeup_cause_t wakeup_reason;
     wakeup_reason = esp_sleep_get_wakeup_cause(); //get wake up reason
-    Wire.begin(SDA, SCL); //init i2c
+    Wire.begin(DIN, SCK); //init i2c
 
     switch (wakeup_reason)
     {
@@ -98,7 +98,7 @@ void Watchy::handleButtonPress(){
           showBattery();
           break;
         case 1:
-          showBuzz();
+          scanSensor();
           break;          
         case 2:
           showSensorMenu(menuIndex, false);
@@ -203,7 +203,7 @@ void Watchy::handleButtonPress(){
                     showBattery();
                     break;
                     case 1:
-                    showBuzz();
+                    scanSensor();
                     break;          
                     case 2:
                     showSensorMenu(0, false);
@@ -302,7 +302,7 @@ void Watchy::showMenu(byte menuIndex, bool partialRefresh){
     uint16_t w, h;
     int16_t yPos;
 
-    const char *menuItems[] = {"Check Battery", "Vibrate Motor", "Sensor Data", "Set Time", "Setup WiFi", "Update Firmware"};
+    const char *menuItems[] = {"Check Battery", "Scan Sensors", "Sensor Data", "Set Time", "Setup WiFi", "Update Firmware"};
     for(int i=0; i<MENU_LENGTH; i++){
     yPos = 30+(MENU_HEIGHT*i);
     display.setCursor(0, yPos);
@@ -332,7 +332,7 @@ void Watchy::showFastMenu(byte menuIndex){
     uint16_t w, h;
     int16_t yPos;
 
-    const char *menuItems[] = {"Check Battery", "Vibrate Motor", "Sensor Data", "Set Time", "Setup WiFi", "Update Firmware"};
+    const char *menuItems[] = {"Check Battery", "Scan Sensors", "Sensor Data", "Set Time", "Setup WiFi", "Update Firmware"};
     for(int i=0; i<MENU_LENGTH; i++){
     yPos = 30+(MENU_HEIGHT*i);
     display.setCursor(0, yPos);
@@ -399,14 +399,14 @@ void Watchy::showBattery(){
     guiState = APP_STATE;      
 }
 
-void Watchy::showBuzz(){
+void Watchy::scanSensor(){
     display.init(0, false); //_initial_refresh to false to prevent full update on init
     display.setFullWindow();
     display.fillScreen(GxEPD_BLACK);
     display.setFont(&FreeMonoBold9pt7b);
     display.setTextColor(GxEPD_WHITE);
-    display.setCursor(70, 80);
-    display.println("Scan Adresses");
+    display.setCursor(30, 80);
+    display.println("Scan Sensors");
     Serial.println("Scan start");
     scanAdress();
     Serial.println("Scan ende");
@@ -979,7 +979,7 @@ void Watchy::updateFWBegin(){
 void scanAdress(){
     
     Serial.println("Scan...");
-    Wire.begin();
+    Wire.begin(SDA, SCL, 100000);
   
     Serial.println("\nI2C Scanner");
     Serial.println("Scanning...");

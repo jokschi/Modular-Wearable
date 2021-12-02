@@ -37,10 +37,14 @@ class Watchy {
         void showMenu(byte menuIndex, bool partialRefresh);
         void showFastMenu(byte menuIndex);
         void showBattery();
+<<<<<<< HEAD
         void showBuzz();
         void showHeartrate();
         void showAccelerometer();
         void showTemp();
+=======
+        void scanSensor();
+>>>>>>> 873ec500fda697f056b80953906c2d945f23547a
         void showSensorMenu(byte menuIndex, bool partialRefresh);
         void showUpdateFW();
         void setTime();
