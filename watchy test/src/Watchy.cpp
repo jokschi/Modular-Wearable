@@ -7,10 +7,9 @@ ESP32Time rtc;
 hw_timer_t * timer = NULL;
 volatile byte state = LOW;
 
-byte error, address;
-int nDevices;
 
-void scanAdress();
+
+int scanAdress();
 
 Watchy watch;
 Adafruit_MPU6050 mpu;
@@ -400,6 +399,9 @@ void Watchy::showBattery(){
 }
 
 void Watchy::scanSensor(){
+    int nDevices = 0;
+    //scanAdress();
+
     display.init(0, false); //_initial_refresh to false to prevent full update on init
     display.setFullWindow();
     display.fillScreen(GxEPD_BLACK);
@@ -407,12 +409,16 @@ void Watchy::scanSensor(){
     display.setTextColor(GxEPD_WHITE);
     display.setCursor(30, 80);
     display.println("Scan Sensors");
-    Serial.println("Scan start");
-    scanAdress();
-    Serial.println("Scan ende");
+    
+    Serial.print("Ende Scan\n");
+    display.setCursor(30, 100);
+    display.print("Sensors: ");
+    display.println(nDevices);
     display.display(false); //full refresh
     display.hibernate();
-    showMenu(menuIndex, false);    
+
+    guiState = APP_STATE;
+       
 }
 
 void Watchy::vibMotor(uint8_t intervalMs, uint8_t length){
@@ -1036,9 +1042,11 @@ void Watchy::updateFWBegin(){
 
 
 
-void scanAdress(){
+int scanAdress(){
+
+    byte error, address;
+    int nDevices;
     
-    Serial.println("Scan...");
     Wire.begin(SDA, SCL, 100000);
   
     Serial.println("\nI2C Scanner");
@@ -1070,6 +1078,7 @@ void scanAdress(){
     else {
         Serial.println("done\n");
     }
+    return nDevices;
 }
 
 
