@@ -49,7 +49,7 @@ void Watchy::init(String datetime){
     Serial.begin(9600);
     esp_sleep_wakeup_cause_t wakeup_reason;
     wakeup_reason = esp_sleep_get_wakeup_cause(); //get wake up reason
-    Wire.begin(DIN, SCK); //init i2c
+    Wire.begin(SDA, SCL); //init i2c
 
     switch (wakeup_reason)
     {
@@ -399,7 +399,7 @@ void Watchy::showBattery(){
 }
 
 void Watchy::scanSensor(){
-    int nDevices = 0;
+    int nDevices = scanAdress();
     //scanAdress();
 
     display.init(0, false); //_initial_refresh to false to prevent full update on init
@@ -436,12 +436,11 @@ void Watchy::showHeartrate(){
 }
 
 void Watchy::showAccelerometer(){
-    display.init(0, true); //_initial_refresh to false to prevent full update on init
     display.setFullWindow();
     display.fillScreen(GxEPD_BLACK);
     display.setFont(&FreeMonoBold9pt7b);
     display.setTextColor(GxEPD_WHITE);
-    sensors_event_t a, g, temp;
+    mpu.begin();
     long previousMillis = 0;
     long interval = 200;  
 
@@ -461,42 +460,44 @@ void Watchy::showAccelerometer(){
         previousMillis = currentMillis;
         display.fillScreen(GxEPD_BLACK);      
         display.setCursor(0, 30);
+        sensors_event_t a, g, temp; 
         mpu.getEvent(&a, &g, &temp); // Get acceleration data
+        uint8_t direction = mpu.getDirection(a.acceleration.x, a.acceleration.y, a.acceleration.z);  
         display.print("  X:"); display.println(a.acceleration.x);
         display.print("  Y:"); display.println(a.acceleration.y);
         display.print("  Z:"); display.println(a.acceleration.z);
 
-        /*display.setCursor(30, 130);
+        display.setCursor(50, 130);
         switch(direction){
-            case DIRECTION_DISP_DOWN:
+            case DIR_DISP_DOWN:
                 display.println("FACE DOWN");
                 break;
-            case DIRECTION_DISP_UP:
+            case DIR_DISP_UP:
                 display.println("FACE UP");
                 break;
-            case DIRECTION_BOTTOM_EDGE:
+            case DIR_BOTTOM_EDGE:
                 display.println("BOTTOM EDGE");
                 break;
-            case DIRECTION_TOP_EDGE:
+            case DIR_TOP_EDGE:
                 display.println("TOP EDGE");
                 break;
-            case DIRECTION_RIGHT_EDGE:
+            case DIR_RIGHT_EDGE:
                 display.println("RIGHT EDGE");
                 break;
-            case DIRECTION_LEFT_EDGE:
+            case DIR_LEFT_EDGE:
                 display.println("LEFT EDGE");
                 break;
             default:
                 display.println("ERROR!!!");
                 break;
-        }*/
+        }
 
-        //display.display(true); //full refresh
+        display.display(true); //full refresh
     
     }
     }
 
-    //showMenu(menuIndex, false);
+    showMenu(menuIndex, false);
 }
 
 void Watchy::showTemp(){
