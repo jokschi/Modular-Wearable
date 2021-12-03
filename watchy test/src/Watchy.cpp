@@ -13,7 +13,7 @@ int nDevices;
 void scanAdress();
 
 Watchy watch;
- 
+Adafruit_MPU6050 mpu;
 GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> Watchy::display(GxEPD2_154_D67(CS, DC, RESET, BUSY));
 
 RTC_DATA_ATTR int guiState;
@@ -430,7 +430,67 @@ void Watchy::showHeartrate(){
 }
 
 void Watchy::showAccelerometer(){
-  
+    display.init(0, true); //_initial_refresh to false to prevent full update on init
+    display.setFullWindow();
+    display.fillScreen(GxEPD_BLACK);
+    display.setFont(&FreeMonoBold9pt7b);
+    display.setTextColor(GxEPD_WHITE);
+    sensors_event_t a, g, temp;
+    long previousMillis = 0;
+    long interval = 200;  
+
+    guiState = APP_STATE;
+
+    pinMode(BACK_BTN_PIN, INPUT_PULLDOWN);
+
+    while(1){
+
+    unsigned long currentMillis = millis();
+
+    if(digitalRead(BACK_BTN_PIN) == 1){
+        break;
+    }
+
+    if(currentMillis - previousMillis > interval){
+        previousMillis = currentMillis;
+        display.fillScreen(GxEPD_BLACK);      
+        display.setCursor(0, 30);
+        mpu.getEvent(&a, &g, &temp); // Get acceleration data
+        display.print("  X:"); display.println(a.acceleration.x);
+        display.print("  Y:"); display.println(a.acceleration.y);
+        display.print("  Z:"); display.println(a.acceleration.z);
+
+        /*display.setCursor(30, 130);
+        switch(direction){
+            case DIRECTION_DISP_DOWN:
+                display.println("FACE DOWN");
+                break;
+            case DIRECTION_DISP_UP:
+                display.println("FACE UP");
+                break;
+            case DIRECTION_BOTTOM_EDGE:
+                display.println("BOTTOM EDGE");
+                break;
+            case DIRECTION_TOP_EDGE:
+                display.println("TOP EDGE");
+                break;
+            case DIRECTION_RIGHT_EDGE:
+                display.println("RIGHT EDGE");
+                break;
+            case DIRECTION_LEFT_EDGE:
+                display.println("LEFT EDGE");
+                break;
+            default:
+                display.println("ERROR!!!");
+                break;
+        }*/
+
+        //display.display(true); //full refresh
+    
+    }
+    }
+
+    //showMenu(menuIndex, false);
 }
 
 void Watchy::showTemp(){

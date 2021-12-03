@@ -12,6 +12,7 @@
 #include "DSEG7_Classic_Bold_53.h"
 #include "BLE.h"
 #include "bma.h"
+#include "Adafruit_MPU6050.h"
 #include "config.h"
 #include "time.h"
 #include "ESP32Time.h"    
