@@ -402,8 +402,6 @@ void Watchy::scanSensor(){
     int nDevices = 0;
     //scanAdress();
 
-    delay(1000);
-
     display.init(0, false); //_initial_refresh to false to prevent full update on init
     display.setFullWindow();
     display.fillScreen(GxEPD_BLACK);
