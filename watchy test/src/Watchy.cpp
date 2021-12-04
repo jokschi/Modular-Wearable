@@ -7,9 +7,11 @@ ESP32Time rtc;
 hw_timer_t * timer = NULL;
 volatile byte state = LOW;
 
+bool SENS_GYRO = false;
+bool SENS_TEMP = false;
+bool SENS_HEART = false;
+void scanAdress();
 
-
-int scanAdress();
 
 Watchy watch;
 Adafruit_MPU6050 mpu;
@@ -400,21 +402,26 @@ void Watchy::showBattery(){
 }
 
 void Watchy::scanSensor(){
-    int nDevices = scanAdress();
-    //scanAdress();
+    scanAdress();
 
     display.init(0, false); //_initial_refresh to false to prevent full update on init
     display.setFullWindow();
     display.fillScreen(GxEPD_BLACK);
     display.setFont(&FreeMonoBold9pt7b);
     display.setTextColor(GxEPD_WHITE);
-    display.setCursor(30, 80);
+    display.setCursor(30, 40);
     display.println("Scan Sensors");
-    
-    Serial.print("Ende Scan\n");
-    display.setCursor(30, 100);
-    display.print("Sensors: ");
-    display.println(nDevices);
+    display.setCursor(0, 80);
+    display.print("Connected: \n");
+    if(SENS_HEART == true){
+        display.println("Heartratesensor");
+    }else if(SENS_TEMP == true){
+        display.println("Temperature Sensor");
+    }else if(SENS_GYRO == true){
+        display.println("Accelerometer");
+    }else{
+        display.println("No Sensor detected");
+    }
     display.display(false); //full refresh
     display.hibernate();
 
@@ -1093,12 +1100,10 @@ void Watchy::updateFWBegin(){
 
 
 
-int scanAdress(){
+void scanAdress(){
 
     byte error, address;
     int nDevices;
-    
-    Wire.begin(SDA, SCL);
   
     Serial.println("\nI2C Scanner");
     Serial.println("Scanning...");
@@ -1111,6 +1116,20 @@ int scanAdress(){
             Serial.print("I2C device found at address 0x");
             if (address<16) {
                 Serial.print("0");
+            }
+            switch (address)
+            {
+            case ADDR_HEART: 
+                SENS_HEART = true;
+                break;
+            case ADDR_GYRO: 
+                SENS_GYRO = true;
+                break;
+            case ADDR_TEMP:
+                SENS_TEMP = true;
+                break;
+            default:
+                break;
             }
             Serial.println(address,HEX);
             nDevices++;
@@ -1125,11 +1144,13 @@ int scanAdress(){
     }
     if (nDevices == 0) {
         Serial.println("No I2C devices found\n");
+        SENS_TEMP = false;
+        SENS_GYRO = false;
+        SENS_HEART = false;
     }
     else {
         Serial.println("done\n");
     }
-    return nDevices;
 }
 
 
