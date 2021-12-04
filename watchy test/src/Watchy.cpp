@@ -399,8 +399,9 @@ void Watchy::showBattery(){
 }
 
 void Watchy::scanSensor(){
-    int nDevices = 0;
-    //scanAdress();
+    int nDevices = scanAdress();
+
+    Wire.begin(DIN, SCK);
 
     display.init(0, false); //_initial_refresh to false to prevent full update on init
     display.setFullWindow();
@@ -987,7 +988,7 @@ int scanAdress(){
     byte error, address;
     int nDevices;
     
-    Wire.begin(SDA, SCL, 100000);
+    Wire.begin(SDA, SCL);
   
     Serial.println("\nI2C Scanner");
     Serial.println("Scanning...");
