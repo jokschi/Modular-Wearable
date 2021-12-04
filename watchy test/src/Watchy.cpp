@@ -13,6 +13,7 @@ int scanAdress();
 
 Watchy watch;
 Adafruit_MPU6050 mpu;
+MAX30105 particleSensor;
 GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> Watchy::display(GxEPD2_154_D67(CS, DC, RESET, BUSY));
 
 RTC_DATA_ATTR int guiState;
@@ -400,12 +401,7 @@ void Watchy::showBattery(){
 
 void Watchy::scanSensor(){
     int nDevices = scanAdress();
-<<<<<<< HEAD
-
-    Wire.begin(DIN, SCK);
-=======
     //scanAdress();
->>>>>>> 1e81e78935742f2ba33a2b7ec08dc14f5f45b383
 
     display.init(0, false); //_initial_refresh to false to prevent full update on init
     display.setFullWindow();
@@ -437,7 +433,56 @@ void Watchy::vibMotor(uint8_t intervalMs, uint8_t length){
 }
 
 void Watchy::showHeartrate(){
-  
+  display.setFullWindow();
+  display.fillScreen(GxEPD_BLACK);
+  display.setFont(&FreeMonoBold9pt7b);
+  display.setTextColor(GxEPD_WHITE);
+  particleSensor.begin(Wire, I2C_SPEED_FAST); //Use default I2C port, 400kHz speed  
+  particleSensor.setup(); //Configure sensor with default settings
+  particleSensor.setPulseAmplitudeRed(0x0A); //Turn Red LED to low to indicate sensor is running
+  particleSensor.setPulseAmplitudeGreen(0); //Turn off Green LED
+  const byte RATE_SIZE = 4; //Increase this for more averaging. 4 is good.
+  byte rates[RATE_SIZE]; //Array of heart rates
+  byte rateSpot = 0;
+  long lastBeat = 0; //Time at which the last beat occurred 
+  float beatsPerMinute = 0;
+  int beatAvg = 0; 
+
+  guiState = APP_STATE;
+
+  while(1){
+  long irValue = particleSensor.getIR();
+
+  if(digitalRead(BACK_BTN_PIN) == 1){
+        break;
+    }
+
+  if (checkForBeat(irValue) == true)
+  {
+    //We sensed a beat!
+    long delta = millis() - lastBeat;
+    lastBeat = millis();
+
+    beatsPerMinute = 60 / (delta / 1000.0);
+
+    if (beatsPerMinute < 255 && beatsPerMinute > 20)
+    {
+      rates[rateSpot++] = (byte)beatsPerMinute; //Store this reading in the array
+      rateSpot %= RATE_SIZE; //Wrap variable
+
+      //Take average of readings
+      beatAvg = 0;
+      for (byte x = 0 ; x < RATE_SIZE ; x++)
+        beatAvg += rates[x];
+      beatAvg /= RATE_SIZE;
+    }
+    display.fillScreen(GxEPD_BLACK);      
+    display.setCursor(0, 30);
+    display.print("  Heartrate:"); display.println(beatAvg);
+    display.display(true); //full refresh
+  }
+  }
+  showMenu(menuIndex, false);
 }
 
 void Watchy::showAccelerometer(){
@@ -445,13 +490,14 @@ void Watchy::showAccelerometer(){
     display.fillScreen(GxEPD_BLACK);
     display.setFont(&FreeMonoBold9pt7b);
     display.setTextColor(GxEPD_WHITE);
-    mpu.begin();
+    
+    
+    mpu.begin()
+    guiState = APP_STATE;
+    pinMode(BACK_BTN_PIN, INPUT_PULLDOWN);
+
     long previousMillis = 0;
     long interval = 200;  
-
-    guiState = APP_STATE;
-
-    pinMode(BACK_BTN_PIN, INPUT_PULLDOWN);
 
     while(1){
 
@@ -498,7 +544,6 @@ void Watchy::showAccelerometer(){
         }
 
         display.display(true); //full refresh
-    
     }
     }
 

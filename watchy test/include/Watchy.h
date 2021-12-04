@@ -13,6 +13,8 @@
 #include "BLE.h"
 #include "bma.h"
 #include "Adafruit_MPU6050.h"
+#include "MAX30105.h"
+#include "heartRate.h"
 #include "config.h"
 #include "time.h"
 #include "ESP32Time.h"    
