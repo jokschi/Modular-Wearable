@@ -12,7 +12,7 @@ volatile byte state = LOW;
 int scanAdress();
 
 Watchy watch;
- 
+Adafruit_MPU6050 mpu;
 GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> Watchy::display(GxEPD2_154_D67(CS, DC, RESET, BUSY));
 
 RTC_DATA_ATTR int guiState;
@@ -49,7 +49,7 @@ void Watchy::init(String datetime){
     Serial.begin(9600);
     esp_sleep_wakeup_cause_t wakeup_reason;
     wakeup_reason = esp_sleep_get_wakeup_cause(); //get wake up reason
-    Wire.begin(DIN, SCK); //init i2c
+    Wire.begin(SDA, SCL); //init i2c
 
     switch (wakeup_reason)
     {
@@ -400,8 +400,12 @@ void Watchy::showBattery(){
 
 void Watchy::scanSensor(){
     int nDevices = scanAdress();
+<<<<<<< HEAD
 
     Wire.begin(DIN, SCK);
+=======
+    //scanAdress();
+>>>>>>> 1e81e78935742f2ba33a2b7ec08dc14f5f45b383
 
     display.init(0, false); //_initial_refresh to false to prevent full update on init
     display.setFullWindow();
@@ -437,7 +441,68 @@ void Watchy::showHeartrate(){
 }
 
 void Watchy::showAccelerometer(){
-  
+    display.setFullWindow();
+    display.fillScreen(GxEPD_BLACK);
+    display.setFont(&FreeMonoBold9pt7b);
+    display.setTextColor(GxEPD_WHITE);
+    mpu.begin();
+    long previousMillis = 0;
+    long interval = 200;  
+
+    guiState = APP_STATE;
+
+    pinMode(BACK_BTN_PIN, INPUT_PULLDOWN);
+
+    while(1){
+
+    unsigned long currentMillis = millis();
+
+    if(digitalRead(BACK_BTN_PIN) == 1){
+        break;
+    }
+
+    if(currentMillis - previousMillis > interval){
+        previousMillis = currentMillis;
+        display.fillScreen(GxEPD_BLACK);      
+        display.setCursor(0, 30);
+        sensors_event_t a, g, temp; 
+        mpu.getEvent(&a, &g, &temp); // Get acceleration data
+        uint8_t direction = mpu.getDirection(a.acceleration.x, a.acceleration.y, a.acceleration.z);  
+        display.print("  X:"); display.println(a.acceleration.x);
+        display.print("  Y:"); display.println(a.acceleration.y);
+        display.print("  Z:"); display.println(a.acceleration.z);
+
+        display.setCursor(50, 130);
+        switch(direction){
+            case DIR_DISP_DOWN:
+                display.println("FACE DOWN");
+                break;
+            case DIR_DISP_UP:
+                display.println("FACE UP");
+                break;
+            case DIR_BOTTOM_EDGE:
+                display.println("BOTTOM EDGE");
+                break;
+            case DIR_TOP_EDGE:
+                display.println("TOP EDGE");
+                break;
+            case DIR_RIGHT_EDGE:
+                display.println("RIGHT EDGE");
+                break;
+            case DIR_LEFT_EDGE:
+                display.println("LEFT EDGE");
+                break;
+            default:
+                display.println("ERROR!!!");
+                break;
+        }
+
+        display.display(true); //full refresh
+    
+    }
+    }
+
+    showMenu(menuIndex, false);
 }
 
 void Watchy::showTemp(){
