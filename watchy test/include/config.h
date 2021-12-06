@@ -64,7 +64,7 @@
 #define HARDWARE_VERSION_MINOR 0
 //SENSOR ADDRESSES
 #define ADDR_HEART 57
-#define ADDR_TEMP 64  
+#define ADDR_TEMP 38  
 #define ADDR_GYRO 68
 
 #endif
