@@ -403,7 +403,6 @@ void Watchy::showBattery(){
 
 void Watchy::scanSensor(){
     scanAdress();
-
     display.init(0, false); //_initial_refresh to false to prevent full update on init
     display.setFullWindow();
     display.fillScreen(GxEPD_BLACK);
@@ -499,7 +498,7 @@ void Watchy::showAccelerometer(){
     display.setTextColor(GxEPD_WHITE);
     
     
-    mpu.begin()
+    mpu.begin();
     guiState = APP_STATE;
     pinMode(BACK_BTN_PIN, INPUT_PULLDOWN);
 
