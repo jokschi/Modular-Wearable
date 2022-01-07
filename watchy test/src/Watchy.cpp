@@ -499,7 +499,7 @@ void Watchy::showAccelerometer(){
     display.setTextColor(GxEPD_WHITE);
     
     
-    mpu.begin()
+    mpu.begin();
     guiState = APP_STATE;
     pinMode(BACK_BTN_PIN, INPUT_PULLDOWN);
 
