@@ -1097,20 +1097,21 @@ void Watchy::updateFWBegin(){
 //     return t + FUDGE;        //add fudge factor to allow for compile time
 // }
 
-
+/****Hinzugefügte Funktion****/
+/****Adressen Scan der Busteilnehmer****/
 
 void scanAdress(){
 
     byte error, address;
-    int nDevices;
+    int nDevices;                                       //Anzahl gefundener Busteilnehmer
   
     Serial.println("\nI2C Scanner");
     Serial.println("Scanning...");
 
     nDevices = 0;
-    for(address = 1; address < 127; address++ ) {
-        Wire.beginTransmission(address);
-        error = Wire.endTransmission();
+    for(address = 1; address < 127; address++ ) {       //Scan for all 7Bit Adresses
+        Wire.beginTransmission(address);                
+        error = Wire.endTransmission();                 //error = 0 Adesse gefunden; error = 4 unknown error
         if (error == 0) {
             Serial.print("I2C device found at address 0x");
             if (address<16) {
